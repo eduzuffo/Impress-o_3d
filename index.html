@@ -1,0 +1,221 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>PrintHub 3D</title>
+
+<style>
+* {
+  margin: 0;
+  padding: 0;
+  box-sizing: border-box;
+  font-family: Arial, sans-serif;
+}
+
+body {
+  background: linear-gradient(135deg, #1f2937, #111827);
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  min-height: 100vh;
+}
+
+.container {
+  background: #ffffff;
+  width: 95%;
+  max-width: 550px;
+  padding: 25px;
+  border-radius: 15px;
+  box-shadow: 0 20px 40px rgba(0,0,0,0.4);
+}
+
+h1 {
+  text-align: center;
+  margin-bottom: 10px;
+  color: #111827;
+}
+
+.subtitle {
+  text-align: center;
+  font-size: 14px;
+  color: #6b7280;
+  margin-bottom: 20px;
+}
+
+label {
+  font-weight: bold;
+  font-size: 14px;
+  margin-top: 15px;
+  display: block;
+  color: #374151;
+}
+
+input, select, textarea {
+  width: 100%;
+  padding: 10px;
+  margin-top: 5px;
+  border-radius: 8px;
+  border: 1px solid #d1d5db;
+  font-size: 14px;
+  transition: 0.2s;
+}
+
+input:focus, select:focus, textarea:focus {
+  border-color: #2563eb;
+  outline: none;
+  box-shadow: 0 0 0 2px rgba(37,99,235,0.2);
+}
+
+textarea {
+  resize: none;
+  height: 80px;
+}
+
+.price-box {
+  background: #f3f4f6;
+  padding: 12px;
+  margin-top: 15px;
+  border-radius: 10px;
+  text-align: center;
+  font-weight: bold;
+  font-size: 16px;
+}
+
+button {
+  width: 100%;
+  padding: 12px;
+  margin-top: 20px;
+  border-radius: 10px;
+  border: none;
+  background: #16a34a;
+  color: white;
+  font-size: 16px;
+  cursor: pointer;
+  transition: 0.3s;
+}
+
+button:hover {
+  background: #15803d;
+}
+
+.footer-note {
+  font-size: 12px;
+  text-align: center;
+  margin-top: 15px;
+  color: #6b7280;
+}
+</style>
+</head>
+<body>
+
+<div class="container">
+  <h1>PrintHub 3D</h1>
+  <div class="subtitle">Impressão 3D sob demanda</div>
+
+  <form id="pedidoForm">
+
+    <label>Nome</label>
+    <input type="text" id="nome" required>
+
+    <label>WhatsApp</label>
+    <input type="text" id="whatsapp" required>
+
+    <label>Estado</label>
+    <input type="text" id="estado" required>
+
+    <label>Cidade</label>
+    <input type="text" id="cidade" required>
+
+    <label>Bairro</label>
+    <input type="text" id="bairro" required>
+
+    <label>Cor desejada</label>
+    <input type="text" id="cor" required>
+
+    <label>Tamanho</label>
+    <select id="tamanho" onchange="calcularPreco()" required>
+      <option value="">Selecione</option>
+      <option value="5">5 cm</option>
+      <option value="10">10 cm</option>
+      <option value="15">15 cm</option>
+      <option value="20">20 cm (máximo Ender 3)</option>
+    </select>
+
+    <div class="price-box">
+      Preço estimado: <span id="preco">R$ 0,00</span>
+    </div>
+
+    <label>Enviar arquivo</label>
+    <input type="file" id="arquivo">
+
+    <label>OU descreva o projeto</label>
+    <textarea id="descricao"></textarea>
+
+    <button type="submit">Enviar Pedido</button>
+
+  </form>
+
+  <div class="footer-note">
+    Arquivos serão enviados pelo WhatsApp após clicar em enviar.
+  </div>
+</div>
+
+<script>
+let precoAtual = 0;
+
+function calcularPreco() {
+  const tamanho = document.getElementById("tamanho").value;
+
+  if (tamanho == 5) precoAtual = 5;
+  else if (tamanho == 10) precoAtual = 20;
+  else if (tamanho == 15) precoAtual = 40;
+  else if (tamanho == 20) precoAtual = 60;
+  else precoAtual = 0;
+
+  document.getElementById("preco").innerText =
+    "R$ " + precoAtual.toFixed(2).replace(".", ",");
+}
+
+document.getElementById("pedidoForm").addEventListener("submit", function(e) {
+  e.preventDefault();
+
+  const nome = document.getElementById("nome").value;
+  const whatsappCliente = document.getElementById("whatsapp").value;
+  const estado = document.getElementById("estado").value;
+  const cidade = document.getElementById("cidade").value;
+  const bairro = document.getElementById("bairro").value;
+  const cor = document.getElementById("cor").value;
+  const tamanho = document.getElementById("tamanho").value;
+  const arquivo = document.getElementById("arquivo").files.length > 0;
+  const descricao = document.getElementById("descricao").value;
+
+  if (!arquivo && !descricao) {
+    alert("Envie um arquivo OU descreva o projeto.");
+    return;
+  }
+
+  const mensagem =
+`📦 PEDIDO DE IMPRESSÃO 3D
+
+👤 ${nome}
+📲 ${whatsappCliente}
+
+📍 ${bairro} - ${cidade}/${estado}
+🎨 Cor: ${cor}
+📏 Tamanho: ${tamanho} cm
+💰 Preço estimado: R$ ${precoAtual}
+
+Arquivo: ${arquivo ? "Será enviado" : "Não"}
+Descrição:
+${descricao || "Arquivo será enviado"}
+`;
+
+  const telefoneSeu = "5549991507936";
+  const url = `https://wa.me/${telefoneSeu}?text=${encodeURIComponent(mensagem)}`;
+  window.open(url, "_blank");
+});
+</script>
+
+</body>
+</html>
